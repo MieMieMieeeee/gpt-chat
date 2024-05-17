@@ -1,7 +1,7 @@
 {
   "name": "@miemiemie/koishi-plugin-gpt-chat",
   "description": "一个koishi插件。gpt-4o的简单实现，支持上传图片。",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "contributors": [
     "miemiemie <ndschen123@gmail.com>"
   ],
@@ -15,6 +15,11 @@
   "koishi": {
     "description": {
       "zh": "gpt-4o多模态的简单实现，支持上传图片。暂不支持上下文。偏自用向。"
+    },
+    "service": {
+      "optional": [
+        "vits"
+      ]
     },
     "locales": [
       "zh"
@@ -31,5 +36,8 @@
   },
   "dependencies": {
     "openai": "^4.47.1"
+  },
+  "devDependencies": {
+    "@initencounter/vits": "^0.0.3"
   }
 }

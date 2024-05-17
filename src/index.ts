@@ -2,16 +2,24 @@ import { Context, Schema,h,SessionError,Logger } from 'koishi'
 import { OpenAI} from 'openai'
 import { ImageData} from './types'
 import { download,  NetworkError} from './utils'
+import type Vits from '@initencounter/vits'
 
 export const name = 'gpt-chat'
 
 const logger = new Logger('gpt-chat')
+
+export const inject = {
+  optional: ['vits'],
+}
 
 export interface Config {
   apiKey: string
   textModel: string
   imageModel: string
   systemContent: string
+  useVoice: boolean
+  voiceLengthThreshold: number 
+  speakerId?: number
 }
 
 export const Config: Schema<Config> = Schema.object({
@@ -19,6 +27,9 @@ export const Config: Schema<Config> = Schema.object({
   textModel: Schema.string().description('OpenAI 模型名称，用于纯文本').default('gpt-3.5-turbo'), 
   imageModel: Schema.string().description('OpenAI 模型名称，用于识图').default('gpt-4o'), 
   systemContent: Schema.string().description('系统提示词').default('你叫Mie宝。用中文回答,不要回复任何关于色情暴力政治的话题。通常情况下，回复字数控制在100字左右。'),
+  useVoice: Schema.boolean().description('是否用语音输出结果,需加载vits服务').default(false),
+  voiceLengthThreshold: Schema.number().description('仅当文字长度小于该值时才输出语音').default(100),
+  speakerId: Schema.number().description('设置 vits 生成语音时的 speaker_id'),
 })
 
 export function apply(ctx: Context, config: Config) {
@@ -26,12 +37,13 @@ export function apply(ctx: Context, config: Config) {
     apiKey: config.apiKey,
   })
 
-  ctx.command('gpt <message:text>')
+  ctx.command('gpt <message:text>') 
     // .alias('chatgpt')
     .action(async ({ session }, message) => {
       if (!message) return session.text('请输入您想与 GPT 聊天的内容。')
       let imgUrl: string, image: ImageData
       let targetModel = config.textModel
+      logger.debug('message', message)
       logger.debug('h.parse:', h.parse(message))
       message = h('', h.transform(h.parse(message), {
         img(attrs) {
@@ -88,8 +100,28 @@ export function apply(ctx: Context, config: Config) {
           messages: messages,
           model: targetModel,
         })
-
+        
         const reply = chatCompletion.choices[0].message.content.trim()
+
+        // voice
+        if (config.useVoice && ctx.vits) {
+          if (reply.length <= config.voiceLengthThreshold){
+            try {
+              logger.debug('reply for vits:',reply)
+              const vitsOptions: Vits.Result = { input: reply }
+              if (config.speakerId !== undefined) {
+                vitsOptions.speaker_id = config.speakerId
+              }
+              const audio = await ctx.vits.say(vitsOptions)
+              await session.send(audio)
+            } catch (err) {
+              logger.error('调用 vits 生成语音时出错:', err)
+              await session.send('生成语音时出错，请稍后再试。')
+            }
+          }
+          
+        } 
+
         return reply
       } catch (error) {
         logger.error('调用 OpenAI API 时出错:', error)
