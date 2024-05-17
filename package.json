@@ -1,7 +1,10 @@
 {
   "name": "@miemiemie/koishi-plugin-gpt-chat",
-  "description": "gpt bot for gpt4-0",
-  "version": "0.0.1",
+  "description": "一个koishi插件。gpt-4o的简单实现，支持上传图片。",
+  "version": "0.0.5",
+  "contributors": [
+    "miemiemie <ndschen123@gmail.com>"
+  ],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "files": [
@@ -9,14 +12,24 @@
     "dist"
   ],
   "license": "MIT",
-  "scripts": {},
+  "koishi": {
+    "description": {
+      "zh": "gpt-4o多模态的简单实现，支持上传图片。暂不支持上下文。偏自用向。"
+    },
+    "locales": [
+      "zh"
+    ]
+  },
   "keywords": [
     "chatbot",
+    "gpt",
     "koishi",
     "plugin"
   ],
-  "devDependencies": {},
   "peerDependencies": {
-    "koishi": "^4.17.6"
+    "koishi": "^4.11.9"
+  },
+  "dependencies": {
+    "openai": "^4.47.1"
   }
 }
