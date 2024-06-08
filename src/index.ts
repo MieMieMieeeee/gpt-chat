@@ -8,6 +8,10 @@ export const name = 'gpt-chat'
 
 const logger = new Logger('gpt-chat')
 
+export const usage = `
+### 注意：
+- 修改配置后如果发现无法正确识别图片的情况，请停用插件并启用插件`
+
 export const inject = {
   optional: ['vits'],
 }
